@@ -1,34 +1,28 @@
 package langfuse
 
 import (
-	"context"
-	"net/http"
+	"encoding/json"
+	"fmt"
 )
 
 // ProjectsService handles operations related to projects
 type ProjectsService service
 
-// Project represents a project in langfuse
-type Project struct {
-	ID            string
-	Metadata      map[string]interface{}
-	Name          string
-	RetentionDays int
-}
-
 // GetProject retrieves a project associated with the given API token
 // https://api.reference.langfuse.com/#tag/projects/get/api/public/projects
-func (s *ProjectsService) GetProject(ctx context.Context) (*Project, *http.Response, error) {
+func (s *ProjectsService) GetProject() (map[string]interface{}, error) {
 	u := "/api/public/projects"
-	req, err := s.client.NewRequest("GET", u, nil)
+
+	body, err := s.client.Do(u)
 	if err != nil {
-		return nil, nil, err
+		return nil, fmt.Errorf("error fetching project: %w", err)
 	}
 
-	var project Project
-	resp, err := s.client.Do(ctx, req)
+	var appData map[string]interface{}
+	err = json.Unmarshal(body, &appData)
 	if err != nil {
-		return nil, resp, err
+		return nil, fmt.Errorf("error unmarshalling ArgoCD application data: %w", err)
 	}
-	return &project, resp, nil
+
+	return appData, nil
 }
