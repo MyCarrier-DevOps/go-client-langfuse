@@ -38,7 +38,6 @@ jobs:
           go-version: ^1.25
       
       - name: unit_tests
-        working-directory: ./go-langfuse
         run: |
           go mod download
           go test -v -cover -coverprofile=coverage.out -covermode=atomic ./...
@@ -63,7 +62,6 @@ jobs:
       - name: Install tools
         run: make install-tools
       - name: Lint check
-        working-directory: ./go-langfuse
         run: |
           go mod tidy
-          golangci-lint run --config ../.github/.golangci.yml --timeout 5m ./...
+          golangci-lint run --config .github/.golangci.yml --timeout 5m ./...
