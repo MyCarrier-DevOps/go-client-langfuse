@@ -12,7 +12,7 @@ const (
 	Version = "v1.0.0"
 
 	defaultBaseURL   = "https://cloud.langfuse.com/api/public/"
-	defaultUserAgent = "go-client-langfuse" + "/" + Version
+	defaultUserAgent = "go-langfuse-client" + "/" + Version
 	defaultMediaType = "*/*"
 )
 
@@ -31,7 +31,7 @@ type service struct {
 }
 
 // NewClient creates a new ArgoCD client with retryable HTTP configuration
-func NewClient(config *Config) *Client {
+func (config *Config) NewClient() *Client {
 	retryClient := retryablehttp.NewClient()
 
 	// Configure retry parameters
@@ -58,6 +58,11 @@ func (c *Client) Do(uri string) (body []byte, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %w", err)
 	}
+
+	if c.apiToken == "" {
+		return nil, fmt.Errorf("API token is required")
+	}
+
 	// Set headers
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.apiToken))
 	req.Header.Set("Content-Type", "application/json")
