@@ -1,0 +1,40 @@
+# Binaries for programs and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+*.wasm
+*.o
+*.cgo1.go
+*.cgo2.c
+_testmain.go
+
+# Test binary, generated with `go test -c`
+*.test
+
+# Output of `go build`
+*.out
+
+# Dependency directories
+# Vendor directory (if not using Go modules or if explicitly vendoring dependencies)
+vendor/
+work/
+# Go module cache (local cache of downloaded modules)
+# This is usually located in your user's home directory, but can be configured
+# via GOCACHE environment variable. If you have a local GOCACHE within your project
+# structure, you might want to ignore it.
+.go/
+
+# IDE and editor specific files
+.idea/
+.vscode/
+*.swp
+*.bak
+*~
+.DS_Store
+
+# Log files
+*.log
+
+# Environment variables
+.env
