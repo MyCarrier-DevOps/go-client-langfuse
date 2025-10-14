@@ -66,6 +66,8 @@ func (c *Client) Do(uri string) (body []byte, err error) {
 	// Set headers
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.apiToken))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", defaultMediaType)
+	req.Header.Set("User-Agent", defaultUserAgent)
 
 	resp, err := c.retryableClient.Do(req)
 	if err != nil {
