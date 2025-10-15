@@ -1,7 +1,7 @@
 # go-client-langfuse
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/MyCarrier-DevOps/go-client-langfuse/v1.0.0.svg)](https://pkg.go.dev/github.com/MyCarrier-DevOps/go-client-langfuse/v1.0.0)
-[![Go Report Card](https://goreportcard.com/badge/github.com/MyCarrier-DevOps/go-client-langfuse/v1.0.0)](https://goreportcard.com/report/github.com/MyCarrier-DevOps/go-client-langfuse/v1.0.0)
+[![Go Reference](https://pkg.go.dev/badge/github.com/MyCarrier-DevOps/go-client-langfuse.svg)](https://pkg.go.dev/github.com/MyCarrier-DevOps/go-client-langfuse)
+[![Go Report Card](https://goreportcard.com/badge/github.com/MyCarrier-DevOps/go-client-langfuse)](https://goreportcard.com/report/github.com/MyCarrier-DevOps/go-client-langfuse)
 [![CI Status](https://github.com/MyCarrier-DevOps/go-client-langfuse/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MyCarrier-DevOps/go-client-langfuse/actions/workflows/ci.yml)
 
 go-client-langfuse is a Go client library for accessing the [Langfuse API](https://langfuse.com/).
