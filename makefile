@@ -15,12 +15,12 @@ test:
 .PHONY: fmt
 fmt:
 	@echo "Formatting go-client-langfuse module..."; \
-	(gofmt -s -w .);
+	(gofmt -l -w -s . );
 
 .PHONY: bump
 bump:
 	@echo "Bumping go-client-langfuse module..."; \
-	(cd go-client-langfuse && go get -u && go mod tidy );
+	(go get -u ./... && go mod tidy);
 
 .PHONY: install-tools
 install-tools:

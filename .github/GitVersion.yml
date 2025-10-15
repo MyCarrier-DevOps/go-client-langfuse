@@ -12,7 +12,7 @@ branches:
     regex: ^main$
     mode: ContinuousDelivery
     label: ''
-    increment: Patch
+    increment: Minor
     prevent-increment:
       of-merged-branch: true
     track-merge-target: false
