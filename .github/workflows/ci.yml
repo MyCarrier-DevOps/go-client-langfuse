@@ -89,7 +89,7 @@ jobs:
       with:
         useConfigFile: true
         disableCache: true
-        configFilePath: .github/Gitversion.yml
+        configFilePath: .github/GitVersion.yml
     - name: Create Tags
       run: |
         git config user.name "$GITHUB_ACTOR"
