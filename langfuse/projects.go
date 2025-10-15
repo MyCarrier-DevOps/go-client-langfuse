@@ -13,7 +13,7 @@ type ProjectsService service
 func (s *ProjectsService) GetProject() (map[string]interface{}, error) {
 	u := "/api/public/projects"
 
-	body, err := s.client.Do(u)
+	body, err := s.client.Do("GET", u)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching project: %w", err)
 	}

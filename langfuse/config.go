@@ -11,6 +11,8 @@ import (
 // Only ServerUrl and AuthToken are required fields; AppName and Revision are optional.
 type Config struct {
 	ServerUrl string `mapstructure:"server_url"`
+	PublicKey string `mapstructure:"public_key"`
+	SecretKey string `mapstructure:"secret_key"`
 	ApiToken  string `mapstructure:"api_token"`
 }
 
@@ -29,7 +31,8 @@ type ConfigLoaderInterface interface {
 // It binds the following environment variables to configuration fields:
 //
 //   - LANGFUSE_SERVER_URL -> ServerUrl (required)
-//   - LANGFUSE_API_TOKEN -> ApiToken (required)
+//   - LANGFUSE_PUBLIC_KEY -> PublicKey (required)
+//   - LANGFUSE_SECRET_KEY -> SecretKey (required)
 //
 // Returns an error if required environment variables are missing or if
 // there are issues with configuration binding or validation.
@@ -37,8 +40,11 @@ func LoadConfig() error {
 	if err := viper.BindEnv("server_url", "LANGFUSE_SERVER_URL"); err != nil {
 		return fmt.Errorf("error binding LANGFUSE_SERVER_URL: %w", err)
 	}
-	if err := viper.BindEnv("api_token", "LANGFUSE_API_TOKEN"); err != nil {
-		return fmt.Errorf("error binding LANGFUSE_API_TOKEN: %w", err)
+	if err := viper.BindEnv("public_key", "LANGFUSE_PUBLIC_KEY"); err != nil {
+		return fmt.Errorf("error binding LANGFUSE_PUBLIC_KEY: %w", err)
+	}
+	if err := viper.BindEnv("secret_key", "LANGFUSE_SECRET_KEY"); err != nil {
+		return fmt.Errorf("error binding LANGFUSE_SECRET_KEY: %w", err)
 	}
 
 	viper.AutomaticEnv()
@@ -61,11 +67,17 @@ func validateConfig(config *Config) error {
 		return fmt.Errorf("LANGFUSE_SERVER_URL is required")
 	}
 
-	if config.ApiToken == "" {
-		return fmt.Errorf("LANGFUSE_API_TOKEN is required")
-	} else {
-		// convert to base64 if not already
-		config.ApiToken = base64.StdEncoding.EncodeToString([]byte(config.ApiToken))
+	if config.PublicKey == "" {
+		return fmt.Errorf("LANGFUSE_PUBLIC_KEY is required")
+	}
+
+	if config.SecretKey == "" {
+		return fmt.Errorf("LANGFUSE_SECRET_KEY is required")
+	}
+
+	if config.PublicKey != "" && config.SecretKey != "" {
+		config.ApiToken = base64.StdEncoding.EncodeToString(
+			[]byte(fmt.Sprintf("%s:%s", config.PublicKey, config.SecretKey)))
 	}
 
 	return nil

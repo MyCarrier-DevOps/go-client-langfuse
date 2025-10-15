@@ -1,6 +1,8 @@
 package langfuse
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"time"
@@ -30,8 +32,9 @@ type service struct {
 	client *Client
 }
 
-// NewClient creates a new ArgoCD client with retryable HTTP configuration
-func (config *Config) NewClient() *Client {
+// NewClient creates a new  /angfuse client with retryable HTTP configuration
+// It uses the global config that was loaded via LoadConfig()
+func NewClient() *Client {
 	retryClient := retryablehttp.NewClient()
 
 	// Configure retry parameters
@@ -46,15 +49,38 @@ func (config *Config) NewClient() *Client {
 	// Disable default logging to avoid noise
 	retryClient.Logger = nil
 
-	return &Client{
+	client := &Client{
 		retryableClient: retryClient,
 		baseUrl:         config.ServerUrl,
 		apiToken:        config.ApiToken,
 	}
+
+	// Initialize services with client reference
+	client.Projects = (*ProjectsService)(&service{client: client})
+	client.Prompts = (*PromptsService)(&service{client: client})
+
+	return client
 }
 
-func (c *Client) Do(uri string) (body []byte, err error) {
-	req, err := retryablehttp.NewRequest("GET", c.baseUrl+uri, nil)
+func (c *Client) Do(method, uri string) (body []byte, err error) {
+	return c.DoWithBody(method, uri, nil)
+}
+
+func (c *Client) DoWithBody(method, uri string, payload interface{}) (body []byte, err error) {
+	if method == "" {
+		method = "GET"
+	}
+
+	var reqBody io.Reader
+	if payload != nil {
+		jsonData, err := json.Marshal(payload)
+		if err != nil {
+			return nil, fmt.Errorf("error marshalling request body: %w", err)
+		}
+		reqBody = bytes.NewBuffer(jsonData)
+	}
+
+	req, err := retryablehttp.NewRequest(method, c.baseUrl+uri, reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %w", err)
 	}
@@ -64,7 +90,7 @@ func (c *Client) Do(uri string) (body []byte, err error) {
 	}
 
 	// Set headers
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.apiToken))
+	req.Header.Set("Authorization", fmt.Sprintf("Basic %s", c.apiToken))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", defaultMediaType)
 	req.Header.Set("User-Agent", defaultUserAgent)
@@ -81,13 +107,19 @@ func (c *Client) Do(uri string) (body []byte, err error) {
 
 	// Handle 4xx client errors (these weren't retried)
 	if resp.StatusCode >= 400 && resp.StatusCode < 500 {
-		body, _ := io.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("error reading response body: %w", err)
+		}
 		return nil, fmt.Errorf("client error %d: %s", resp.StatusCode, string(body))
 	}
 
 	// Handle any remaining 5xx errors that exhausted retries
 	if resp.StatusCode >= 500 {
-		body, _ := io.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("error reading response body: %w", err)
+		}
 		return nil, fmt.Errorf("server error %d: %s", resp.StatusCode, string(body))
 	}
 
