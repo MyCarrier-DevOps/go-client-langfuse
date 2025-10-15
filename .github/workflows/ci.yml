@@ -119,7 +119,7 @@ jobs:
           ## Documentation
           
           View package documentation on pkg.go.dev:
-          - [argocdclient](https://pkg.go.dev/github.com/MyCarrier-DevOps/go-client-langfuse/langfuse@v${{ steps.calculate_version.outputs.majorMinorPatch }})
+          - [go-client-langfuse](https://pkg.go.dev/github.com/MyCarrier-DevOps/go-client-langfuse/langfuse@v${{ steps.calculate_version.outputs.majorMinorPatch }})
           
         draft: false
         prerelease: false
