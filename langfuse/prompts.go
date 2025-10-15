@@ -27,6 +27,11 @@ type ChatMessage struct {
 	Content string `json:"content"`
 }
 
+// UpdatePromptVersionLabelsRequest represents the request body for updating prompt version labels
+type UpdatePromptVersionLabelsRequest struct {
+	NewLabels []string `json:"newLabels"`
+}
+
 // Get a list of prompt names with versions and labels for the given API token
 // https://api.reference.langfuse.com/#tag/prompts/get/api/public/v2/prompts
 func (s *PromptsService) GetPrompts() (map[string]interface{}, error) {
@@ -98,4 +103,27 @@ func (s *PromptsService) CreatePrompt(prompt *Prompt) (*Prompt, error) {
 	}
 
 	return &createdPrompt, nil
+}
+
+// UpdatePromptVersionLabels updates the labels for a specific prompt version
+// https://api.reference.langfuse.com/#tag/promptversion/patch/api/public/v2/prompts/%7Bname%7D/versions/%7Bversion%7D
+func (s *PromptsService) UpdatePromptVersionLabels(name string, version int, newLabels []string) (*Prompt, error) {
+	u := fmt.Sprintf("/api/public/v2/prompts/%s/versions/%d", name, version)
+
+	request := &UpdatePromptVersionLabelsRequest{
+		NewLabels: newLabels,
+	}
+
+	body, err := s.client.DoWithBody("PATCH", u, request)
+	if err != nil {
+		return nil, fmt.Errorf("error updating prompt version labels: %w", err)
+	}
+
+	var updatedPrompt Prompt
+	err = json.Unmarshal(body, &updatedPrompt)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling updated prompt data: %w", err)
+	}
+
+	return &updatedPrompt, nil
 }

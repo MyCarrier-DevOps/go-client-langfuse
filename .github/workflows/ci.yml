@@ -1,4 +1,4 @@
-name: Lint and Unittests
+name: CI Pipeline
 on:
   workflow_dispatch:
   push:

@@ -2,6 +2,7 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/MyCarrier-DevOps/go-client-langfuse/v1.0.0.svg)](https://pkg.go.dev/github.com/MyCarrier-DevOps/go-client-langfuse/v1.0.0)
 [![Go Report Card](https://goreportcard.com/badge/github.com/MyCarrier-DevOps/go-client-langfuse/v1.0.0)](https://goreportcard.com/report/github.com/MyCarrier-DevOps/go-client-langfuse/v1.0.0)
+[![CI Status](https://github.com/MyCarrier-DevOps/go-client-langfuse/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MyCarrier-DevOps/go-client-langfuse/actions/workflows/ci.yml)
 
 go-client-langfuse is a Go client library for accessing the [Langfuse API](https://langfuse.com/).
 
@@ -185,6 +186,32 @@ if err != nil {
 }
 ```
 
+#### Update Prompt Version Labels
+
+Update the labels for a specific prompt version. Note that labels must be unique across all versions of a prompt, and the `latest` label is reserved and managed by Langfuse:
+
+```go
+// Update labels for version 1 of "my-prompt"
+updatedPrompt, err := client.Prompts.UpdatePromptVersionLabels(
+    "my-prompt",
+    1,
+    []string{"staging", "beta"},
+)
+if err != nil {
+    log.Fatalf("Error updating prompt version labels: %v", err)
+}
+
+fmt.Printf("Updated prompt version %d with labels: %v\n",
+    updatedPrompt.Version,
+    updatedPrompt.Labels)
+```
+
+Common use cases:
+- Promote a version from "staging" to "production"
+- Add experiment labels like "beta" or "canary"
+- Remove labels by providing a new list that excludes them
+- Clear all labels by providing an empty slice `[]string{}`
+
 ## Examples
 
 For a complete working example, see [example/example.go](example/example.go).
@@ -248,12 +275,14 @@ Tests use mock HTTP servers to avoid making real API calls.
 The library currently supports the following Langfuse API endpoints:
 
 ### Projects API
--  `GET /api/public/projects` - Get project information
+- `GET /api/public/projects` - Get project information
 
 ### Prompts API
--  `GET /api/public/v2/prompts` - List all prompts
--  `GET /api/public/v2/prompts/{name}` - Get prompt by name (with optional label/version)
--  `POST /api/public/v2/prompts` - Create a new prompt or version
+- `GET /api/public/v2/prompts` - List all prompts
+- `GET /api/public/v2/prompts/{name}` - Get prompt by name (with optional label/version)
+- `POST /api/public/v2/prompts` - Create a new prompt or version
+- `PATCH /api/public/v2/prompts/{name}/versions/{version}` - Update prompt version labels
+
 
 ## Roadmap
 

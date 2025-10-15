@@ -2,6 +2,7 @@ package langfuse
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -454,5 +455,207 @@ func TestPromptsService_CreatePrompt_TextPrompt(t *testing.T) {
 
 	if createdPrompt.Type != "text" {
 		t.Errorf("Expected type 'text', got %s", createdPrompt.Type)
+	}
+}
+
+func TestPromptsService_UpdatePromptVersionLabels_Success(t *testing.T) {
+	promptName := "test-prompt"
+	version := 1
+	newLabels := []string{"staging", "beta"}
+
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		// Verify request method
+		if r.Method != "PATCH" {
+			t.Errorf("Expected PATCH method, got %s", r.Method)
+		}
+
+		// Verify path
+		expectedPath := fmt.Sprintf("/api/public/v2/prompts/%s/versions/%d", promptName, version)
+		if r.URL.Path != expectedPath {
+			t.Errorf("Expected path %s, got %s", expectedPath, r.URL.Path)
+		}
+
+		// Verify content type
+		if r.Header.Get("Content-Type") != "application/json" {
+			t.Errorf("Expected Content-Type application/json, got %s", r.Header.Get("Content-Type"))
+		}
+
+		// Decode and verify request body
+		var request UpdatePromptVersionLabelsRequest
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			t.Fatalf("Failed to decode request body: %v", err)
+		}
+
+		if len(request.NewLabels) != len(newLabels) {
+			t.Errorf("Expected %d labels, got %d", len(newLabels), len(request.NewLabels))
+		}
+
+		for i, label := range newLabels {
+			if request.NewLabels[i] != label {
+				t.Errorf("Expected label %s at index %d, got %s", label, i, request.NewLabels[i])
+			}
+		}
+
+		// Return updated prompt
+		updatedPrompt := Prompt{
+			Name:    promptName,
+			Type:    "chat",
+			Version: version,
+			Labels:  newLabels,
+			Tags:    []string{"test"},
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(updatedPrompt)
+	}
+
+	client, server := setupPromptsTestClient(handler)
+	defer server.Close()
+
+	updatedPrompt, err := client.Prompts.UpdatePromptVersionLabels(promptName, version, newLabels)
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if updatedPrompt == nil {
+		t.Fatal("Expected updated prompt, got nil")
+	}
+
+	if updatedPrompt.Name != promptName {
+		t.Errorf("Expected name %s, got %s", promptName, updatedPrompt.Name)
+	}
+
+	if updatedPrompt.Version != version {
+		t.Errorf("Expected version %d, got %d", version, updatedPrompt.Version)
+	}
+
+	if len(updatedPrompt.Labels) != len(newLabels) {
+		t.Errorf("Expected %d labels, got %d", len(newLabels), len(updatedPrompt.Labels))
+	}
+
+	for i, label := range newLabels {
+		if updatedPrompt.Labels[i] != label {
+			t.Errorf("Expected label %s at index %d, got %s", label, i, updatedPrompt.Labels[i])
+		}
+	}
+}
+
+func TestPromptsService_UpdatePromptVersionLabels_ValidationError(t *testing.T) {
+	promptName := "test-prompt"
+	version := 1
+	newLabels := []string{"latest"} // 'latest' is a reserved label
+
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"error": "The 'latest' label is reserved and managed by Langfuse"}`))
+	}
+
+	client, server := setupPromptsTestClient(handler)
+	defer server.Close()
+
+	_, err := client.Prompts.UpdatePromptVersionLabels(promptName, version, newLabels)
+	if err == nil {
+		t.Fatal("Expected error for reserved label, got nil")
+	}
+}
+
+func TestPromptsService_UpdatePromptVersionLabels_DuplicateLabels(t *testing.T) {
+	promptName := "test-prompt"
+	version := 1
+	newLabels := []string{"production"} // Label already exists on another version
+
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"error": "Labels must be unique across versions"}`))
+	}
+
+	client, server := setupPromptsTestClient(handler)
+	defer server.Close()
+
+	_, err := client.Prompts.UpdatePromptVersionLabels(promptName, version, newLabels)
+	if err == nil {
+		t.Fatal("Expected error for duplicate label, got nil")
+	}
+}
+
+func TestPromptsService_UpdatePromptVersionLabels_NotFound(t *testing.T) {
+	promptName := "nonexistent-prompt"
+	version := 99
+	newLabels := []string{"test"}
+
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(`{"error": "Prompt version not found"}`))
+	}
+
+	client, server := setupPromptsTestClient(handler)
+	defer server.Close()
+
+	_, err := client.Prompts.UpdatePromptVersionLabels(promptName, version, newLabels)
+	if err == nil {
+		t.Fatal("Expected error for not found prompt version, got nil")
+	}
+}
+
+func TestPromptsService_UpdatePromptVersionLabels_Unauthorized(t *testing.T) {
+	promptName := "test-prompt"
+	version := 1
+	newLabels := []string{"staging"}
+
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte(`{"error": "Unauthorized"}`))
+	}
+
+	client, server := setupPromptsTestClient(handler)
+	defer server.Close()
+
+	_, err := client.Prompts.UpdatePromptVersionLabels(promptName, version, newLabels)
+	if err == nil {
+		t.Fatal("Expected error for unauthorized request, got nil")
+	}
+}
+
+func TestPromptsService_UpdatePromptVersionLabels_EmptyLabels(t *testing.T) {
+	promptName := "test-prompt"
+	version := 1
+	newLabels := []string{} // Empty labels array
+
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		// Verify request
+		var request UpdatePromptVersionLabelsRequest
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			t.Fatalf("Failed to decode request body: %v", err)
+		}
+
+		if len(request.NewLabels) != 0 {
+			t.Errorf("Expected empty labels array, got %d labels", len(request.NewLabels))
+		}
+
+		// Return updated prompt with empty labels
+		updatedPrompt := Prompt{
+			Name:    promptName,
+			Type:    "chat",
+			Version: version,
+			Labels:  []string{},
+			Tags:    []string{"test"},
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(updatedPrompt)
+	}
+
+	client, server := setupPromptsTestClient(handler)
+	defer server.Close()
+
+	updatedPrompt, err := client.Prompts.UpdatePromptVersionLabels(promptName, version, newLabels)
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if len(updatedPrompt.Labels) != 0 {
+		t.Errorf("Expected 0 labels, got %d", len(updatedPrompt.Labels))
 	}
 }

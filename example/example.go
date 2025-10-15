@@ -67,6 +67,20 @@ func main() {
 	// Log retrieved prompt information
 	log.Infof("Retrieved Prompt: %+v", retrievedPrompt)
 
+	// Example: Update prompt version labels
+	updatedPrompt, err := client.Prompts.UpdatePromptVersionLabels(
+		createdPrompt.Name,
+		createdPrompt.Version,
+		[]string{"staging", "beta"},
+	)
+	if err != nil {
+		log.Errorf("Failed to update prompt version labels: %v", err)
+		return
+	}
+
+	// Log updated prompt information
+	log.Infof("Updated Prompt Labels: %+v", updatedPrompt)
+
 	// Example: List all prompts
 	prompts, err := client.Prompts.GetPrompts()
 	if err != nil {
