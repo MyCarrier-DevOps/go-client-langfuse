@@ -65,3 +65,61 @@ jobs:
         run: |
           go mod tidy
           golangci-lint run --config .github/.golangci.yml --timeout 5m ./...
+  
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: 
+      - unit_tests
+      - lint
+    if: github.ref == 'refs/heads/main'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.ref }}
+        fetch-depth: 0
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v3.1.11
+      with:
+        versionSpec: '6.0.x'
+    - name: Calculate Version
+      id: calculate_version # step id used as reference for output values
+      uses: gittools/actions/gitversion/execute@v3.1.11
+      with:
+        useConfigFile: true
+        disableCache: true
+        configFilePath: .github/Gitversion.yml
+    - name: Create Tags
+      run: |
+        git config user.name "$GITHUB_ACTOR"
+        git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+        git tag -a v${{ steps.calculate_version.outputs.majorMinorPatch }} -m "Release v${{ steps.calculate_version.outputs.majorMinorPatch }}"
+    
+        git push origin v${{ steps.calculate_version.outputs.majorMinorPatch }}
+      
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.calculate_version.outputs.majorMinorPatch }}
+        release_name: Release v${{ steps.calculate_version.outputs.majorMinorPatch }}
+        body: |
+          # go-client-langfuse v${{ steps.calculate_version.outputs.majorMinorPatch }}
+          
+          ## Installation
+
+          Install package using:
+          ```bash
+          go get github.com/MyCarrier-DevOps/go-client-langfuse/langfuse@v${{ steps.calculate_version.outputs.majorMinorPatch }}
+          ```
+          
+          ## Documentation
+          
+          View package documentation on pkg.go.dev:
+          - [argocdclient](https://pkg.go.dev/github.com/MyCarrier-DevOps/go-client-langfuse/langfuse@v${{ steps.calculate_version.outputs.majorMinorPatch }})
+          
+        draft: false
+        prerelease: false
