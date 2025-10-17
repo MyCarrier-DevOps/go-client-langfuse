@@ -37,6 +37,11 @@ func NewConfig(serverUrl, publicKey, secretKey string) (*Config, error) {
 		SecretKey: secretKey,
 	}
 
+	if cfg.PublicKey != "" && cfg.SecretKey != "" {
+		cfg.Base64Token = base64.StdEncoding.EncodeToString(
+			[]byte(fmt.Sprintf("%s:%s", cfg.PublicKey, cfg.SecretKey)))
+	}
+
 	if err := validateConfig(cfg); err != nil {
 		return nil, err
 	}
