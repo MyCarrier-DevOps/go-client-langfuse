@@ -60,7 +60,11 @@ export LANGFUSE_SECRET_KEY="sk-lf-..."
 
 ### Creating a Client
 
-First, load the configuration from environment variables, then create a client:
+You can create a client in two ways:
+
+#### Option 1: Using Environment Variables
+
+Load the configuration from environment variables, then create a client:
 
 ```go
 package main
@@ -72,12 +76,42 @@ import (
 
 func main() {
     // Load configuration from environment variables
-    if err := langfuse.LoadConfig(); err != nil {
+    if err := langfuse.LoadConfigFromEnvVars(); err != nil {
         log.Fatalf("Failed to load config: %v", err)
     }
 
     // Create a new client
     client := langfuse.NewClient()
+
+    // Use the client...
+}
+```
+
+#### Option 2: Direct Configuration (Without Environment Variables)
+
+Create a configuration directly without environment variables:
+
+```go
+package main
+
+import (
+    "log"
+    "github.com/MyCarrier-DevOps/go-client-langfuse/langfuse"
+)
+
+func main() {
+    // Create configuration directly
+    config, err := langfuse.NewConfig(
+        "https://cloud.langfuse.com",
+        "pk-lf-xxx",
+        "sk-lf-xxx",
+    )
+    if err != nil {
+        log.Fatalf("Failed to create config: %v", err)
+    }
+
+    // Create a new client with the config
+    client := langfuse.NewClientWithConfig(config)
 
     // Use the client...
 }

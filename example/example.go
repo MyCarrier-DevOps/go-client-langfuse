@@ -9,7 +9,7 @@ func main() {
 	// Initialize OpenTelemetry (optional, but recommended for tracing)
 	log := otel.NewAppLogger()
 	// Load configuration from environment variables
-	if err := langfuse.LoadConfig(); err != nil {
+	if err := langfuse.LoadConfigFromEnvVars(); err != nil {
 		log.Errorf("Failed to load config: %v", err)
 		return
 	}

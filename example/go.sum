@@ -1,5 +1,7 @@
 github.com/MyCarrier-DevOps/go-client-langfuse v1.1.0 h1:I+L5iBykgIB/VAFQK69maMXYhWU8Ad3ah0LRpXjWOEw=
 github.com/MyCarrier-DevOps/go-client-langfuse v1.1.0/go.mod h1:tQrI0D41DY3ovFr2EhfgL2gPRByBy13CtnUG+baXew0=
+github.com/MyCarrier-DevOps/go-client-langfuse v1.2.0 h1:xiYhZglaroPYcFN7MBTRH0YM+xQGmpauxJg5zg+nGYk=
+github.com/MyCarrier-DevOps/go-client-langfuse v1.2.0/go.mod h1:gyga67NXoNQPJHLUJvdyHqst8fnQbWsyEF8MT2+sjY4=
 github.com/MyCarrier-DevOps/goLibMyCarrier/otel v1.3.33 h1:P2qop/zY7qziq8me3UZpeADpVsyu2lOl/265LZzyLgk=
 github.com/MyCarrier-DevOps/goLibMyCarrier/otel v1.3.33/go.mod h1:Jqsy4LhjFeZgZGXiXfM+LIJ2x5iIf42tCSktB6YV8a4=
 github.com/bytedance/gopkg v0.1.3 h1:TPBSwH8RsouGCBcMBktLt1AymVo2TVsBVCY4b6TnZ/M=
@@ -90,10 +92,8 @@ github.com/quic-go/quic-go v0.55.0 h1:zccPQIqYCXDt5NmcEabyYvOnomjs8Tlwl7tISjJh9M
 github.com/quic-go/quic-go v0.55.0/go.mod h1:DR51ilwU1uE164KuWXhinFcKWGlEjzys2l8zUl5Ss1U=
 github.com/rogpeppe/go-internal v1.14.1 h1:UQB4HGPB6osV0SQTLymcB4TgvyWu6ZyliaW0tI/otEQ=
 github.com/rogpeppe/go-internal v1.14.1/go.mod h1:MaRKkUm5W0goXpeCfT7UZI6fk/L7L7so1lCWt35ZSgc=
-github.com/sagikazarmark/locafero v0.11.0 h1:1iurJgmM9G3PA/I+wWYIOw/5SyBtxapeHDcg+AAIFXc=
-github.com/sagikazarmark/locafero v0.11.0/go.mod h1:nVIGvgyzw595SUSUE6tvCp3YYTeHs15MvlmU87WwIik=
-github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 h1:+jumHNA0Wrelhe64i8F6HNlS8pkoyMv5sreGx2Ry5Rw=
-github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8/go.mod h1:3n1Cwaq1E1/1lhQhtRK2ts/ZwZEhjcQeJQ1RuC6Q/8U=
+github.com/sagikazarmark/locafero v0.12.0 h1:/NQhBAkUb4+fH1jivKHWusDYFjMOOKU88eegjfxfHb4=
+github.com/sagikazarmark/locafero v0.12.0/go.mod h1:sZh36u/YSZ918v0Io+U9ogLYQJ9tLLBmM4eneO6WwsI=
 github.com/spf13/afero v1.15.0 h1:b/YBCLWAJdFWJTN9cLhiXXcD7mzKn9Dm86dNnfyQw1I=
 github.com/spf13/afero v1.15.0/go.mod h1:NC2ByUVxtQs4b3sIUphxK0NioZnmxgyCrfzeuq8lxMg=
 github.com/spf13/cast v1.10.0 h1:h2x0u2shc1QuLHfxi+cTJvs30+ZAHOGRic8uyGTDWxY=
