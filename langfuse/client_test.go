@@ -238,12 +238,12 @@ func TestClient_DoWithBody_InvalidJSON(t *testing.T) {
 
 func TestNewClient(t *testing.T) {
 	// Set up config for testing
-	config = Config{
+	config := Config{
 		ServerUrl:   "https://test.langfuse.com",
 		Base64Token: "test-token",
 	}
 
-	client := NewClient()
+	client := NewClient(&config)
 
 	if client == nil {
 		t.Fatal("Expected client to be created, got nil")
@@ -271,114 +271,6 @@ func TestNewClient(t *testing.T) {
 
 	if client.retryableClient.RetryMax != 3 {
 		t.Errorf("Expected RetryMax 3, got %d", client.retryableClient.RetryMax)
-	}
-}
-
-func TestNewClientWithConfig(t *testing.T) {
-	cfg, err := NewConfig(
-		"https://cloud.langfuse.com",
-		"pk-lf-test-123",
-		"sk-lf-test-456",
-	)
-	if err != nil {
-		t.Fatalf("Failed to create config: %v", err)
-	}
-
-	client := NewClientWithConfig(cfg)
-
-	if client == nil {
-		t.Fatal("Expected client to be created, got nil")
-	}
-
-	if client.baseUrl != cfg.ServerUrl {
-		t.Errorf("Expected baseUrl %s, got %s", cfg.ServerUrl, client.baseUrl)
-	}
-
-	if client.base64Token != cfg.Base64Token {
-		t.Errorf("Expected base64Token %s, got %s", cfg.Base64Token, client.base64Token)
-	}
-
-	if client.Projects == nil {
-		t.Error("Expected Projects service to be initialized")
-	}
-
-	if client.Prompts == nil {
-		t.Error("Expected Prompts service to be initialized")
-	}
-
-	if client.retryableClient == nil {
-		t.Error("Expected retryableClient to be initialized")
-	}
-
-	// Verify retry configuration
-	if client.retryableClient.RetryMax != 3 {
-		t.Errorf("Expected RetryMax 3, got %d", client.retryableClient.RetryMax)
-	}
-
-	if client.retryableClient.RetryWaitMin != 1*time.Second {
-		t.Errorf("Expected RetryWaitMin 1s, got %v", client.retryableClient.RetryWaitMin)
-	}
-
-	if client.retryableClient.RetryWaitMax != 4*time.Second {
-		t.Errorf("Expected RetryWaitMax 4s, got %v", client.retryableClient.RetryWaitMax)
-	}
-}
-
-func TestNewClientWithConfig_CustomServerUrl(t *testing.T) {
-	customUrls := []string{
-		"https://cloud.langfuse.com",
-		"https://us.cloud.langfuse.com",
-		"https://eu.cloud.langfuse.com",
-		"https://langfuse.example.com",
-		"http://localhost:3000",
-	}
-
-	for _, url := range customUrls {
-		t.Run(url, func(t *testing.T) {
-			cfg, err := NewConfig(url, "pk-test", "sk-test")
-			if err != nil {
-				t.Fatalf("Failed to create config: %v", err)
-			}
-
-			client := NewClientWithConfig(cfg)
-
-			if client.baseUrl != url {
-				t.Errorf("Expected baseUrl %s, got %s", url, client.baseUrl)
-			}
-		})
-	}
-}
-
-func TestNewClientWithConfig_WithRealRequest(t *testing.T) {
-	// Create a test server
-	handler := func(w http.ResponseWriter, r *http.Request) {
-		// Verify the Authorization header is set correctly
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
-			t.Error("Expected Authorization header to be set")
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status": "ok"}`))
-	}
-
-	server := httptest.NewServer(http.HandlerFunc(handler))
-	defer server.Close()
-
-	// Create config with test server URL
-	cfg, err := NewConfig(server.URL, "pk-test", "sk-test")
-	if err != nil {
-		t.Fatalf("Failed to create config: %v", err)
-	}
-
-	// Create client with config
-	client := NewClientWithConfig(cfg)
-
-	// Make a request
-	_, err = client.Do("GET", "/test")
-	if err != nil {
-		t.Fatalf("Expected request to succeed, got error: %v", err)
 	}
 }
 

@@ -15,8 +15,6 @@ func resetViper() {
 	os.Unsetenv("LANGFUSE_SERVER_URL")
 	os.Unsetenv("LANGFUSE_PUBLIC_KEY")
 	os.Unsetenv("LANGFUSE_SECRET_KEY")
-	// Reset the global config variable
-	config = Config{}
 }
 
 func TestLoadConfig_Success(t *testing.T) {
@@ -27,7 +25,7 @@ func TestLoadConfig_Success(t *testing.T) {
 	os.Setenv("LANGFUSE_PUBLIC_KEY", "test-public-key")
 	os.Setenv("LANGFUSE_SECRET_KEY", "test-secret-key")
 
-	err := LoadConfigFromEnvVars()
+	config, err := LoadConfigFromEnvVars()
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -60,7 +58,7 @@ func TestLoadConfig_MissingServerUrl(t *testing.T) {
 	os.Setenv("LANGFUSE_PUBLIC_KEY", "test-public-key")
 	os.Setenv("LANGFUSE_SECRET_KEY", "test-secret-key")
 
-	err := LoadConfigFromEnvVars()
+	config, err := LoadConfigFromEnvVars()
 	if err == nil {
 		t.Fatalf("Expected error for missing LANGFUSE_SERVER_URL, got nil. Config: %+v", config)
 	}
@@ -78,7 +76,7 @@ func TestLoadConfig_MissingPublicKey(t *testing.T) {
 	os.Setenv("LANGFUSE_SERVER_URL", "https://test.langfuse.com")
 	os.Setenv("LANGFUSE_SECRET_KEY", "test-secret-key")
 
-	err := LoadConfigFromEnvVars()
+	config, err := LoadConfigFromEnvVars()
 	if err == nil {
 		t.Fatalf("Expected error for missing LANGFUSE_PUBLIC_KEY, got nil. Config: %+v", config)
 	}
@@ -96,7 +94,7 @@ func TestLoadConfig_MissingSecretKey(t *testing.T) {
 	os.Setenv("LANGFUSE_SERVER_URL", "https://test.langfuse.com")
 	os.Setenv("LANGFUSE_PUBLIC_KEY", "test-public-key")
 
-	err := LoadConfigFromEnvVars()
+	config, err := LoadConfigFromEnvVars()
 	if err == nil {
 		t.Fatalf("Expected error for missing LANGFUSE_SECRET_KEY, got nil. Config: %+v", config)
 	}
@@ -115,7 +113,7 @@ func TestLoadConfig_MissingAllVariables(t *testing.T) {
 	os.Unsetenv("LANGFUSE_PUBLIC_KEY")
 	os.Unsetenv("LANGFUSE_SECRET_KEY")
 
-	err := LoadConfigFromEnvVars()
+	config, err := LoadConfigFromEnvVars()
 	if err == nil {
 		t.Fatalf("Expected error for missing environment variables, got nil. Config: %+v", config)
 	}
@@ -311,7 +309,7 @@ func TestLoadConfig_WithDifferentServerUrls(t *testing.T) {
 			os.Setenv("LANGFUSE_PUBLIC_KEY", "test-public-key")
 			os.Setenv("LANGFUSE_SECRET_KEY", "test-secret-key")
 
-			err := LoadConfigFromEnvVars()
+			config, err := LoadConfigFromEnvVars()
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
@@ -596,7 +594,7 @@ func TestConfigCreation_BothMethods(t *testing.T) {
 	os.Setenv("LANGFUSE_PUBLIC_KEY", testPublicKey)
 	os.Setenv("LANGFUSE_SECRET_KEY", testSecretKey)
 
-	err := LoadConfigFromEnvVars()
+	config, err := LoadConfigFromEnvVars()
 	if err != nil {
 		t.Fatalf("LoadConfigFromEnvVars failed: %v", err)
 	}
@@ -683,7 +681,7 @@ func TestLoadConfigFromEnvVars_MultipleCalls(t *testing.T) {
 	os.Setenv("LANGFUSE_PUBLIC_KEY", "pk-first")
 	os.Setenv("LANGFUSE_SECRET_KEY", "sk-first")
 
-	err := LoadConfigFromEnvVars()
+	config, err := LoadConfigFromEnvVars()
 	if err != nil {
 		t.Fatalf("First LoadConfigFromEnvVars failed: %v", err)
 	}
@@ -697,7 +695,7 @@ func TestLoadConfigFromEnvVars_MultipleCalls(t *testing.T) {
 
 	// Reset viper to pick up new values
 	viper.Reset()
-	err = LoadConfigFromEnvVars()
+	config, err = LoadConfigFromEnvVars()
 	if err != nil {
 		t.Fatalf("Second LoadConfigFromEnvVars failed: %v", err)
 	}
@@ -720,7 +718,7 @@ func TestLoadConfigFromEnvVars_WithWhitespace(t *testing.T) {
 	os.Setenv("LANGFUSE_PUBLIC_KEY", "  pk-test  ")
 	os.Setenv("LANGFUSE_SECRET_KEY", "  sk-test  ")
 
-	err := LoadConfigFromEnvVars()
+	config, err := LoadConfigFromEnvVars()
 	if err != nil {
 		t.Fatalf("LoadConfigFromEnvVars failed: %v", err)
 	}
@@ -748,7 +746,7 @@ func TestLoadConfigFromEnvVars_EmptyStringVsUnset(t *testing.T) {
 	os.Setenv("LANGFUSE_PUBLIC_KEY", "pk-test")
 	os.Setenv("LANGFUSE_SECRET_KEY", "sk-test")
 
-	err := LoadConfigFromEnvVars()
+	_, err := LoadConfigFromEnvVars()
 	if err == nil {
 		t.Fatal("Expected error for empty ServerUrl, got nil")
 	}
@@ -833,7 +831,7 @@ func TestLoadConfigFromEnvVars_PartialConfiguration(t *testing.T) {
 				os.Unsetenv("LANGFUSE_SECRET_KEY")
 			}
 
-			err := LoadConfigFromEnvVars()
+			_, err := LoadConfigFromEnvVars()
 			if err == nil {
 				t.Fatalf("Expected error '%s', got nil", tt.expectedError)
 			}
@@ -853,7 +851,7 @@ func TestLoadConfigFromEnvVars_CasePreservation(t *testing.T) {
 	os.Setenv("LANGFUSE_PUBLIC_KEY", "PK-MixedCase-123")
 	os.Setenv("LANGFUSE_SECRET_KEY", "SK-MixedCase-456")
 
-	err := LoadConfigFromEnvVars()
+	config, err := LoadConfigFromEnvVars()
 	if err != nil {
 		t.Fatalf("LoadConfigFromEnvVars failed: %v", err)
 	}
@@ -870,31 +868,6 @@ func TestLoadConfigFromEnvVars_CasePreservation(t *testing.T) {
 	expectedToken := base64.StdEncoding.EncodeToString([]byte("PK-MixedCase-123:SK-MixedCase-456"))
 	if config.Base64Token != expectedToken {
 		t.Errorf("Expected Base64Token '%s', got '%s'", expectedToken, config.Base64Token)
-	}
-}
-
-func TestLoadConfigFromEnvVars_GlobalConfigUpdate(t *testing.T) {
-	defer resetViper()
-
-	// Save original config
-	originalConfig := config
-
-	os.Setenv("LANGFUSE_SERVER_URL", "https://new.langfuse.com")
-	os.Setenv("LANGFUSE_PUBLIC_KEY", "pk-new")
-	os.Setenv("LANGFUSE_SECRET_KEY", "sk-new")
-
-	err := LoadConfigFromEnvVars()
-	if err != nil {
-		t.Fatalf("LoadConfigFromEnvVars failed: %v", err)
-	}
-
-	// Verify global config was updated
-	if config.ServerUrl == originalConfig.ServerUrl {
-		t.Error("Expected global config to be updated")
-	}
-
-	if config.ServerUrl != "https://new.langfuse.com" {
-		t.Errorf("Expected ServerUrl 'https://new.langfuse.com', got '%s'", config.ServerUrl)
 	}
 }
 
@@ -948,7 +921,7 @@ func TestLoadConfigFromEnvVars_ValidationErrors(t *testing.T) {
 
 			tt.setupEnv()
 
-			err := LoadConfigFromEnvVars()
+			_, err := LoadConfigFromEnvVars()
 			if err == nil {
 				t.Fatalf("Expected error '%s', got nil", tt.expectedError)
 			}
@@ -968,7 +941,7 @@ func TestLoadConfigFromEnvVars_ErrorMessageFormat(t *testing.T) {
 	os.Setenv("LANGFUSE_PUBLIC_KEY", "pk-test")
 	os.Setenv("LANGFUSE_SECRET_KEY", "sk-test")
 
-	err := LoadConfigFromEnvVars()
+	_, err := LoadConfigFromEnvVars()
 	if err == nil {
 		t.Fatal("Expected error, got nil")
 	}
@@ -988,7 +961,7 @@ func TestLoadConfigFromEnvVars_SuccessfulValidation(t *testing.T) {
 	os.Setenv("LANGFUSE_PUBLIC_KEY", "pk-lf-valid-key-123")
 	os.Setenv("LANGFUSE_SECRET_KEY", "sk-lf-valid-key-456")
 
-	err := LoadConfigFromEnvVars()
+	config, err := LoadConfigFromEnvVars()
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -1054,7 +1027,7 @@ func TestLoadConfigFromEnvVars_SequentialCallsWithDifferentValues(t *testing.T) 
 			os.Setenv("LANGFUSE_PUBLIC_KEY", scenario.publicKey)
 			os.Setenv("LANGFUSE_SECRET_KEY", scenario.secretKey)
 
-			err := LoadConfigFromEnvVars()
+			config, err := LoadConfigFromEnvVars()
 			if err != nil {
 				t.Fatalf("LoadConfigFromEnvVars failed: %v", err)
 			}

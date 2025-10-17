@@ -76,12 +76,13 @@ import (
 
 func main() {
     // Load configuration from environment variables
-    if err := langfuse.LoadConfigFromEnvVars(); err != nil {
+    config, err := langfuse.LoadConfigFromEnvVars()
+    if err != nil {
         log.Fatalf("Failed to load config: %v", err)
     }
 
-    // Create a new client
-    client := langfuse.NewClient()
+    // Create a new client with the loaded configuration
+    client := langfuse.NewClient(config)
 
     // Use the client...
 }
@@ -111,7 +112,7 @@ func main() {
     }
 
     // Create a new client with the config
-    client := langfuse.NewClientWithConfig(config)
+    client := langfuse.NewClient(config)
 
     // Use the client...
 }

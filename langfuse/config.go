@@ -16,9 +16,6 @@ type Config struct {
 	Base64Token string `mapstructure:"base64_token"`
 }
 
-// config is an alias for Config to avoid import cycles in other packages
-var config Config
-
 // NewConfig creates a new Config instance with the provided values.
 // This allows creating a configuration without relying on environment variables.
 // All three parameters are required.
@@ -67,30 +64,31 @@ type ConfigLoaderInterface interface {
 //   - LANGFUSE_PUBLIC_KEY -> PublicKey (required)
 //   - LANGFUSE_SECRET_KEY -> SecretKey (required)
 //
-// Returns an error if required environment variables are missing or if
-// there are issues with configuration binding or validation.
-func LoadConfigFromEnvVars() error {
+// Returns the loaded configuration or an error if required environment variables
+// are missing or if there are issues with configuration binding or validation.
+func LoadConfigFromEnvVars() (*Config, error) {
 	if err := viper.BindEnv("server_url", "LANGFUSE_SERVER_URL"); err != nil {
-		return fmt.Errorf("error binding LANGFUSE_SERVER_URL: %w", err)
+		return nil, fmt.Errorf("error binding LANGFUSE_SERVER_URL: %w", err)
 	}
 	if err := viper.BindEnv("public_key", "LANGFUSE_PUBLIC_KEY"); err != nil {
-		return fmt.Errorf("error binding LANGFUSE_PUBLIC_KEY: %w", err)
+		return nil, fmt.Errorf("error binding LANGFUSE_PUBLIC_KEY: %w", err)
 	}
 	if err := viper.BindEnv("secret_key", "LANGFUSE_SECRET_KEY"); err != nil {
-		return fmt.Errorf("error binding LANGFUSE_SECRET_KEY: %w", err)
+		return nil, fmt.Errorf("error binding LANGFUSE_SECRET_KEY: %w", err)
 	}
 
 	viper.AutomaticEnv()
+	var config Config
 
 	if err := viper.Unmarshal(&config); err != nil {
-		return fmt.Errorf("error unmarshalling config: %w", err)
+		return nil, fmt.Errorf("error unmarshalling config: %w", err)
 	}
 
 	if err := validateConfig(&config); err != nil {
-		return fmt.Errorf("error validating config: %w", err)
+		return nil, fmt.Errorf("error validating config: %w", err)
 	}
 
-	return nil
+	return &config, nil
 }
 
 // validateConfig validates that all required configuration fields are present.

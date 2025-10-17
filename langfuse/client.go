@@ -33,36 +33,6 @@ type service struct {
 }
 
 // NewClient creates a new Langfuse client with retryable HTTP configuration
-// It uses the global config that was loaded via LoadConfigFromEnvVars()
-func NewClient() *Client {
-	retryClient := retryablehttp.NewClient()
-
-	// Configure retry parameters
-	retryClient.RetryMax = 3
-	retryClient.RetryWaitMin = 1 * time.Second
-	retryClient.RetryWaitMax = 4 * time.Second
-	retryClient.Backoff = retryablehttp.DefaultBackoff
-
-	// Use default retry policy (retries on 5xx and network errors)
-	retryClient.CheckRetry = retryablehttp.DefaultRetryPolicy
-
-	// Disable default logging to avoid noise
-	retryClient.Logger = nil
-
-	client := &Client{
-		retryableClient: retryClient,
-		baseUrl:         config.ServerUrl,
-		base64Token:     config.Base64Token,
-	}
-
-	// Initialize services with client reference
-	client.Projects = (*ProjectsService)(&service{client: client})
-	client.Prompts = (*PromptsService)(&service{client: client})
-
-	return client
-}
-
-// NewClientWithConfig creates a new Langfuse client with retryable HTTP configuration
 // using the provided Config. This allows creating a client without relying on
 // environment variables or the global config.
 //
@@ -76,8 +46,8 @@ func NewClient() *Client {
 //	if err != nil {
 //	    log.Fatal(err)
 //	}
-//	client := langfuse.NewClientWithConfig(config)
-func NewClientWithConfig(cfg *Config) *Client {
+//	client := langfuse.NewClient(config)
+func NewClient(cfg *Config) *Client {
 	retryClient := retryablehttp.NewClient()
 
 	// Configure retry parameters

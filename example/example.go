@@ -8,14 +8,29 @@ import (
 func main() {
 	// Initialize OpenTelemetry (optional, but recommended for tracing)
 	log := otel.NewAppLogger()
-	// Load configuration from environment variables
-	if err := langfuse.LoadConfigFromEnvVars(); err != nil {
+
+	// Option 1: Load configuration from environment variables
+	// Uncomment this section to use environment variables
+	config, err := langfuse.LoadConfigFromEnvVars()
+	if err != nil {
 		log.Errorf("Failed to load config: %v", err)
 		return
 	}
 
-	// Create a new client using the loaded config
-	client := langfuse.NewClient()
+	// Option 2: Create configuration directly without environment variables
+	// Uncomment this section to use direct configuration
+	// config, err := langfuse.NewConfig(
+	// 	"https://cloud.langfuse.com",
+	// 	"pk-lf-xxx", // Your public key
+	// 	"sk-lf-xxx", // Your secret key
+	// )
+	// if err != nil {
+	// 	log.Errorf("Failed to create config: %v", err)
+	// 	return
+	// }
+
+	// Create a new client using the configuration
+	client := langfuse.NewClient(config)
 
 	// Use the client to get project information
 	project, err := client.Projects.GetProject()
