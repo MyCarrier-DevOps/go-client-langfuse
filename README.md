@@ -4,9 +4,10 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/MyCarrier-DevOps/go-client-langfuse)](https://goreportcard.com/report/github.com/MyCarrier-DevOps/go-client-langfuse)
 [![CI Status](https://github.com/MyCarrier-DevOps/go-client-langfuse/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MyCarrier-DevOps/go-client-langfuse/actions/workflows/ci.yml)
 
-go-client-langfuse is a Go client library for accessing the [Langfuse API](https://langfuse.com/).
+<i> ⚠️ Note: This library is not officially maintained by Langfuse. It’s a community-driven project and is actively being developed. </i>
 
-Langfuse is an open-source LLM engineering platform that helps teams collaboratively debug, analyze, and iterate on their LLM applications.
+
+go-client-langfuse is a Go client library for accessing the [Langfuse API](https://api.reference.langfuse.com).
 
 ## Table of Contents
 
