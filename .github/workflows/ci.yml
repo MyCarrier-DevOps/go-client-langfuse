@@ -47,7 +47,7 @@ jobs:
         uses: vladopajic/go-test-coverage@v2
         with:
           profile: ./coverage.out
-          threshold-total: 75
+          threshold-total: 85
 
   
   lint:

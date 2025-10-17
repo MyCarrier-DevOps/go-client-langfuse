@@ -106,7 +106,7 @@ func setupPromptsTestClient(handler http.HandlerFunc) (*Client, *httptest.Server
 	client := &Client{
 		retryableClient: retryClient,
 		baseUrl:         server.URL,
-		apiToken:        "test-token",
+		base64Token:     "test-token",
 	}
 
 	client.Prompts = (*PromptsService)(&service{client: client})

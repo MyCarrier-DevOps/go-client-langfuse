@@ -22,7 +22,7 @@ func setupProjectsTestClient(handler http.HandlerFunc) (*Client, *httptest.Serve
 	client := &Client{
 		retryableClient: retryClient,
 		baseUrl:         server.URL,
-		apiToken:        "test-token",
+		base64Token:     "test-token",
 	}
 
 	client.Projects = (*ProjectsService)(&service{client: client})

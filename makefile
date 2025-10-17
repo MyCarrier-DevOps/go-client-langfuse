@@ -12,6 +12,16 @@ test:
 	@echo "Testing go-client-langfuse module..."; \
 	(go mod download && go test -cover -coverprofile=coverage.out ./... && go tool cover -func coverage.out );
 
+.PHONY: build
+build:
+	@echo "Building go-client-langfuse module..."; \
+	(go build -o bin/go-client-langfuse-$(GOOS)-$(GOARCH) ./... );
+
+.PHONY: tidy
+tidy:
+	@echo "Tidying go-client-langfuse module..."; \
+	(go mod tidy);
+
 .PHONY: fmt
 fmt:
 	@echo "Formatting go-client-langfuse module..."; \

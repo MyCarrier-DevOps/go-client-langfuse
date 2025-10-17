@@ -22,7 +22,7 @@ const (
 type Client struct {
 	retryableClient *retryablehttp.Client
 	baseUrl         string
-	apiToken        string
+	base64Token     string
 
 	Projects *ProjectsService
 	Prompts  *PromptsService
@@ -32,9 +32,22 @@ type service struct {
 	client *Client
 }
 
-// NewClient creates a new  /angfuse client with retryable HTTP configuration
-// It uses the global config that was loaded via LoadConfig()
-func NewClient() *Client {
+// NewClient creates a new Langfuse client with retryable HTTP configuration
+// using the provided Config. This allows creating a client without relying on
+// environment variables or the global config.
+//
+// Example:
+//
+//	config, err := langfuse.NewConfig(
+//	    "https://cloud.langfuse.com",
+//	    "pk-lf-xxx",
+//	    "sk-lf-xxx",
+//	)
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+//	client := langfuse.NewClient(config)
+func NewClient(cfg *Config) *Client {
 	retryClient := retryablehttp.NewClient()
 
 	// Configure retry parameters
@@ -51,8 +64,8 @@ func NewClient() *Client {
 
 	client := &Client{
 		retryableClient: retryClient,
-		baseUrl:         config.ServerUrl,
-		apiToken:        config.ApiToken,
+		baseUrl:         cfg.ServerUrl,
+		base64Token:     cfg.Base64Token,
 	}
 
 	// Initialize services with client reference
@@ -85,12 +98,12 @@ func (c *Client) DoWithBody(method, uri string, payload interface{}) (body []byt
 		return nil, fmt.Errorf("error creating request: %w", err)
 	}
 
-	if c.apiToken == "" {
-		return nil, fmt.Errorf("API token is required")
+	if c.base64Token == "" {
+		return nil, fmt.Errorf("Base64 token is required")
 	}
 
 	// Set headers
-	req.Header.Set("Authorization", fmt.Sprintf("Basic %s", c.apiToken))
+	req.Header.Set("Authorization", fmt.Sprintf("Basic %s", c.base64Token))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", defaultMediaType)
 	req.Header.Set("User-Agent", defaultUserAgent)
