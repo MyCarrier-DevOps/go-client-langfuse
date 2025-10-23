@@ -659,3 +659,236 @@ func TestPromptsService_UpdatePromptVersionLabels_EmptyLabels(t *testing.T) {
 		t.Errorf("Expected 0 labels, got %d", len(updatedPrompt.Labels))
 	}
 }
+
+// TestPromptsService_GetPromptByName_WithSpecialCharactersInName tests URL encoding for special characters in prompt name
+func TestPromptsService_GetPromptByName_WithSpecialCharactersInName(t *testing.T) {
+	testCases := []struct {
+		name         string
+		promptName   string
+		expectedPath string
+	}{
+		{
+			name:         "prompt name with spaces",
+			promptName:   "my prompt name",
+			expectedPath: "/api/public/v2/prompts/my%20prompt%20name",
+		},
+		{
+			name:         "prompt name with forward slash",
+			promptName:   "path/to/prompt",
+			expectedPath: "/api/public/v2/prompts/path%2Fto%2Fprompt",
+		},
+		{
+			name:         "prompt name with special characters",
+			promptName:   "prompt@test#123",
+			expectedPath: "/api/public/v2/prompts/prompt@test%23123",
+		},
+		{
+			name:         "prompt name with question mark",
+			promptName:   "what?is?this",
+			expectedPath: "/api/public/v2/prompts/what%3Fis%3Fthis",
+		},
+		{
+			name:         "prompt name with ampersand",
+			promptName:   "this&that",
+			expectedPath: "/api/public/v2/prompts/this&that",
+		},
+		{
+			name:         "prompt name with percent sign",
+			promptName:   "100%complete",
+			expectedPath: "/api/public/v2/prompts/100%25complete",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			handler := func(w http.ResponseWriter, r *http.Request) {
+				// Verify the URL path is correctly encoded by checking EscapedPath
+				if r.URL.EscapedPath() != tc.expectedPath {
+					t.Errorf("Expected path %s, got %s", tc.expectedPath, r.URL.EscapedPath())
+				}
+
+				prompt := Prompt{
+					Name:    tc.promptName,
+					Type:    "text",
+					Version: 1,
+					Labels:  []string{"production"},
+				}
+
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				json.NewEncoder(w).Encode(prompt)
+			}
+
+			client, server := setupPromptsTestClient(handler)
+			defer server.Close()
+
+			prompt, err := client.Prompts.GetPromptByName(tc.promptName, "", nil)
+			if err != nil {
+				t.Fatalf("Expected no error, got %v", err)
+			}
+
+			if prompt.Name != tc.promptName {
+				t.Errorf("Expected name %s, got %s", tc.promptName, prompt.Name)
+			}
+		})
+	}
+}
+
+// TestPromptsService_GetPromptByName_WithSpecialCharactersInLabel tests URL encoding for special characters in label
+func TestPromptsService_GetPromptByName_WithSpecialCharactersInLabel(t *testing.T) {
+	testCases := []struct {
+		name          string
+		label         string
+		expectedLabel string
+	}{
+		{
+			name:          "label with spaces",
+			label:         "my label",
+			expectedLabel: "my+label",
+		},
+		{
+			name:          "label with special characters",
+			label:         "v1.0-beta",
+			expectedLabel: "v1.0-beta",
+		},
+		{
+			name:          "label with ampersand",
+			label:         "test&prod",
+			expectedLabel: "test%26prod",
+		},
+		{
+			name:          "label with equals sign",
+			label:         "version=1",
+			expectedLabel: "version%3D1",
+		},
+		{
+			name:          "label with percent sign",
+			label:         "100%",
+			expectedLabel: "100%25",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			handler := func(w http.ResponseWriter, r *http.Request) {
+				// Verify query parameter is correctly encoded
+				query := r.URL.Query()
+				receivedLabel := query.Get("label")
+
+				// The expected label should match what we sent
+				if receivedLabel != tc.label {
+					t.Errorf("Expected label query param to decode to %s, got %s", tc.label, receivedLabel)
+				}
+
+				// Check the raw query string contains the encoded value
+				if !contains(r.URL.RawQuery, "label="+tc.expectedLabel) {
+					t.Errorf("Expected raw query to contain 'label=%s', got %s", tc.expectedLabel, r.URL.RawQuery)
+				}
+
+				prompt := Prompt{
+					Name:    "test-prompt",
+					Type:    "text",
+					Version: 1,
+					Labels:  []string{tc.label},
+				}
+
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				json.NewEncoder(w).Encode(prompt)
+			}
+
+			client, server := setupPromptsTestClient(handler)
+			defer server.Close()
+
+			prompt, err := client.Prompts.GetPromptByName("test-prompt", tc.label, nil)
+			if err != nil {
+				t.Fatalf("Expected no error, got %v", err)
+			}
+
+			if len(prompt.Labels) > 0 && prompt.Labels[0] != tc.label {
+				t.Errorf("Expected label %s, got %s", tc.label, prompt.Labels[0])
+			}
+		})
+	}
+}
+
+// TestPromptsService_UpdatePromptVersionLabels_WithSpecialCharactersInName tests URL encoding for special characters in prompt name
+func TestPromptsService_UpdatePromptVersionLabels_WithSpecialCharactersInName(t *testing.T) {
+	testCases := []struct {
+		name         string
+		promptName   string
+		expectedPath string
+	}{
+		{
+			name:         "prompt name with spaces",
+			promptName:   "my prompt",
+			expectedPath: "/api/public/v2/prompts/my%20prompt/versions/1",
+		},
+		{
+			name:         "prompt name with forward slash",
+			promptName:   "org/prompt",
+			expectedPath: "/api/public/v2/prompts/org%2Fprompt/versions/1",
+		},
+		{
+			name:         "prompt name with special characters",
+			promptName:   "prompt@v1#test",
+			expectedPath: "/api/public/v2/prompts/prompt@v1%23test/versions/1",
+		},
+		{
+			name:         "prompt name with percent sign",
+			promptName:   "100%done",
+			expectedPath: "/api/public/v2/prompts/100%25done/versions/1",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			version := 1
+			newLabels := []string{"staging"}
+
+			handler := func(w http.ResponseWriter, r *http.Request) {
+				// Verify the URL path is correctly encoded by checking EscapedPath
+				if r.URL.EscapedPath() != tc.expectedPath {
+					t.Errorf("Expected path %s, got %s", tc.expectedPath, r.URL.EscapedPath())
+				}
+
+				updatedPrompt := Prompt{
+					Name:    tc.promptName,
+					Type:    "chat",
+					Version: version,
+					Labels:  newLabels,
+				}
+
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				json.NewEncoder(w).Encode(updatedPrompt)
+			}
+
+			client, server := setupPromptsTestClient(handler)
+			defer server.Close()
+
+			prompt, err := client.Prompts.UpdatePromptVersionLabels(tc.promptName, version, newLabels)
+			if err != nil {
+				t.Fatalf("Expected no error, got %v", err)
+			}
+
+			if prompt.Name != tc.promptName {
+				t.Errorf("Expected name %s, got %s", tc.promptName, prompt.Name)
+			}
+		})
+	}
+}
+
+// Helper function to check if a string contains a substring
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr || len(s) > len(substr) && (s[:len(substr)] == substr || s[len(s)-len(substr):] == substr || containsMiddle(s, substr)))
+}
+
+func containsMiddle(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
+}

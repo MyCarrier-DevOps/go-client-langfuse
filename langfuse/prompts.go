@@ -55,27 +55,21 @@ func (s *PromptsService) GetPrompts() (map[string]interface{}, error) {
 // GetPromptByName retrieves a specific prompt by its Name
 // https://api.reference.langfuse.com/#tag/prompts/get/api/public/v2/prompts/{promptName}
 func (s *PromptsService) GetPromptByName(name, label string, version *int) (*Prompt, error) {
-	// url encode name, label
-	encodedName := url.PathEscape(name)
-	encodedLabel := url.PathEscape(label)
+	// Build URL path with properly escaped name
+	u := fmt.Sprintf("/api/public/v2/prompts/%s", url.PathEscape(name))
 
-	// Build URL with query parameters
-	u := fmt.Sprintf("/api/public/v2/prompts/%s", encodedName)
-
-	// Build query parameters only if they have values
-	params := []string{}
+	// Build query parameters using url.Values for proper encoding
+	queryParams := url.Values{}
 	if label != "" {
-		params = append(params, fmt.Sprintf("label=%s", encodedLabel))
+		queryParams.Set("label", label)
 	}
 	if version != nil {
-		params = append(params, fmt.Sprintf("version=%d", *version))
+		queryParams.Set("version", fmt.Sprintf("%d", *version))
 	}
 
-	if len(params) > 0 {
-		u = u + "?" + params[0]
-		for i := 1; i < len(params); i++ {
-			u = u + "&" + params[i]
-		}
+	// Append query string if there are parameters
+	if len(queryParams) > 0 {
+		u = u + "?" + queryParams.Encode()
 	}
 
 	body, err := s.client.Do("GET", u)
