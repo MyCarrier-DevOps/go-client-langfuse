@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/url"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
@@ -93,10 +94,24 @@ func (c *Client) DoWithBody(method, uri string, payload interface{}) (body []byt
 		reqBody = bytes.NewBuffer(jsonData)
 	}
 
-	req, err := retryablehttp.NewRequest(method, c.baseUrl+uri, reqBody)
+	// Parse the full URL to properly handle percent-encoded path segments
+	fullURL := c.baseUrl + uri
+	parsedURL, err := url.Parse(fullURL)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing URL: %w", err)
+	}
+
+	// Set RawPath to preserve percent-encoding in the path
+	// This is necessary because url.Parse decodes the path by default
+	parsedURL.RawPath = parsedURL.EscapedPath()
+
+	req, err := retryablehttp.NewRequest(method, parsedURL.String(), reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %w", err)
 	}
+
+	// Manually set the URL with RawPath preserved
+	req.URL = parsedURL
 
 	if c.base64Token == "" {
 		return nil, fmt.Errorf("Base64 token is required")

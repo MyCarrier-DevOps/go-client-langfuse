@@ -3,7 +3,6 @@ module example
 go 1.25.2
 
 require (
-	github.com/MyCarrier-DevOps/go-client-langfuse v1.2.0
 	github.com/MyCarrier-DevOps/goLibMyCarrier/otel v1.3.33
 )
 
