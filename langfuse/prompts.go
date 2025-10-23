@@ -3,6 +3,7 @@ package langfuse
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 )
 
 // PromptsService handles operations related to prompts
@@ -54,12 +55,17 @@ func (s *PromptsService) GetPrompts() (map[string]interface{}, error) {
 // GetPromptByName retrieves a specific prompt by its Name
 // https://api.reference.langfuse.com/#tag/prompts/get/api/public/v2/prompts/{promptName}
 func (s *PromptsService) GetPromptByName(name, label string, version *int) (*Prompt, error) {
-	u := fmt.Sprintf("/api/public/v2/prompts/%s", name)
+	// url encode name, label
+	encodedName := url.PathEscape(name)
+	encodedLabel := url.PathEscape(label)
+
+	// Build URL with query parameters
+	u := fmt.Sprintf("/api/public/v2/prompts/%s", encodedName)
 
 	// Build query parameters only if they have values
 	params := []string{}
 	if label != "" {
-		params = append(params, fmt.Sprintf("label=%s", label))
+		params = append(params, fmt.Sprintf("label=%s", encodedLabel))
 	}
 	if version != nil {
 		params = append(params, fmt.Sprintf("version=%d", *version))
@@ -108,7 +114,9 @@ func (s *PromptsService) CreatePrompt(prompt *Prompt) (*Prompt, error) {
 // UpdatePromptVersionLabels updates the labels for a specific prompt version
 // https://api.reference.langfuse.com/#tag/promptversion/patch/api/public/v2/prompts/%7Bname%7D/versions/%7Bversion%7D
 func (s *PromptsService) UpdatePromptVersionLabels(name string, version int, newLabels []string) (*Prompt, error) {
-	u := fmt.Sprintf("/api/public/v2/prompts/%s/versions/%d", name, version)
+	// url encode name
+	encodedName := url.PathEscape(name)
+	u := fmt.Sprintf("/api/public/v2/prompts/%s/versions/%d", encodedName, version)
 
 	request := &UpdatePromptVersionLabelsRequest{
 		NewLabels: newLabels,
