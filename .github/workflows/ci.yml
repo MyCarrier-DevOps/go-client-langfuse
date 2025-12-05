@@ -25,7 +25,7 @@ on:
 jobs:
   unit_tests:
     name: unit_tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     continue-on-error: true
     permissions:
       contents: read
@@ -52,7 +52,7 @@ jobs:
   
   lint:
     name: lint check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -66,12 +66,24 @@ jobs:
           go mod tidy
           golangci-lint run --config .github/.golangci.yml --timeout 5m ./...
   
+  check-sec:
+    name: check-sec
+    runs-on: ubuntu-slim
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ^1.25
+      - name: Run vulnerability scan on go-client-langfuse pkgs
+        run: make check-sec
+  
   release:
     name: Create Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: 
       - unit_tests
       - lint
+      - check-sec
     if: github.ref == 'refs/heads/main'
     steps:
     - name: Checkout code
