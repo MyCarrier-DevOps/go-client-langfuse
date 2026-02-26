@@ -1,6 +1,6 @@
 module github.com/MyCarrier-DevOps/go-client-langfuse
 
-go 1.25.5
+go 1.26
 
 require (
 	github.com/hashicorp/go-retryablehttp v0.7.8
